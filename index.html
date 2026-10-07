@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>BioSustain — Biology Challenge</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="brand-mark">🧬</span><div><b>BioSustain</b><small>Biology Challenge</small></div></div>
+  <nav>
+    <button data-page="home" class="nav-btn active">Beranda</button>
+    <button data-page="materi" class="nav-btn">Materi</button>
+    <button data-page="latihan" class="nav-btn">Latihan</button>
+    <button data-page="kompetisi" class="nav-btn">Kompetisi</button>
+  </nav>
+</header>
+
+<main>
+<section id="home" class="page active">
+  <div class="hero">
+    <div class="hero-copy">
+      <span class="eyebrow">BIOLOGY • SUSTAINABILITY • HOTS</span>
+      <h1>Belajar biologi,<br><em>pikirkan sistemnya.</em></h1>
+      <p>Web belajar dan simulasi lomba untuk topik <b>Sustainable Biological System</b>, dengan format latihan yang mengikuti pola penyisihan dan final.</p>
+      <div class="hero-actions">
+        <button class="primary" onclick="showPage('materi')">Mulai belajar →</button>
+        <button class="secondary" onclick="showPage('kompetisi')">Coba simulasi</button>
+      </div>
+    </div>
+    <div class="hero-card">
+      <div class="orb">🌱</div>
+      <h3>Target utama</h3>
+      <p>Pahami hubungan <b>limbah → proses biologis → produk → lingkungan</b>.</p>
+      <div class="mini-grid">
+        <span>♻️ Limbah</span><span>⚡ Energi</span><span>💧 Air</span><span>🌍 Ekosistem</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div><strong>50</strong><span>Penyisihan</span></div>
+    <div><strong>50</strong><span>Final</span></div>
+    <div><strong>100</strong><span>Total soal</span></div>
+    <div><strong>HOTS</strong><span>Berbasis kasus</span></div>
+  </div>
+
+  <div class="section-title"><span>ROADMAP</span><h2>Yang perlu kamu kuasai</h2></div>
+  <div class="topic-grid">
+    <article><div>♻️</div><h3>Pengelolaan Limbah</h3><p>Komposting, waste-to-resource, dan daur ulang biologis.</p></article>
+    <article><div>⚡</div><h3>Energi Biologis</h3><p>Biogas, biomassa, biofuel, dan neraca energi.</p></article>
+    <article><div>💧</div><h3>Pengelolaan Air</h3><p>Biofilter, mikroorganisme, dan constructed wetland.</p></article>
+    <article><div>🌍</div><h3>Keberlanjutan</h3><p>Efisiensi sumber daya, circular system, dan dampak lingkungan.</p></article>
+  </div>
+</section>
+
+<section id="materi" class="page">
+  <div class="section-title"><span>STUDY MODE</span><h2>Materi inti</h2><p>Versi ringkas untuk dipahami sebelum mengerjakan HOTS.</p></div>
+  <div id="material-list" class="material-list"></div>
+  <div class="memory-box"><b>🧠 Rumus hafalan:</b> “Pakai proses biologis untuk menghasilkan sesuatu yang berguna, tanpa merusak kemampuan alam untuk terus bekerja.”</div>
+</section>
+
+<section id="latihan" class="page">
+  <div class="section-title"><span>PRACTICE MODE</span><h2>Latihan bebas</h2><p>Pilih topik dan kerjakan soal acak. Tidak dibatasi waktu.</p></div>
+  <div class="practice-controls">
+    <button class="filter active" data-filter="all">Semua</button>
+    <button class="filter" data-filter="mcq">Pilihan Ganda</button>
+    <button class="filter" data-filter="hots">HOTS</button>
+    <button class="filter" data-filter="short">Isian</button>
+  </div>
+  <div id="practice-box" class="quiz-box"></div>
+</section>
+
+<section id="kompetisi" class="page">
+  <div class="section-title"><span>COMPETITION MODE</span><h2>Simulasi lomba</h2><p>Format dibuat mengikuti tabel yang kamu kirim.</p></div>
+  <div id="competition-menu" class="competition-menu">
+    <div class="round-card">
+      <span class="round-tag">BABAK PENYISIHAN</span>
+      <h3>50 soal</h3>
+      <p>20 Pilihan Ganda + 30 Pilihan Ganda HOTS.</p>
+      <button class="primary" onclick="startCompetition('prelim')">Mulai Penyisihan</button>
+    </div>
+    <div class="round-card dark">
+      <span class="round-tag">BABAK FINAL</span>
+      <h3>50 soal</h3>
+      <p>10 PG + 15 PG HOTS + 15 Isian + 10 Isian HOTS.</p>
+      <button class="light" onclick="startCompetition('final')">Mulai Final</button>
+    </div>
+  </div>
+  <div id="competition-box" class="quiz-box hidden"></div>
+</section>
+</main>
+
+<footer>BioSustain • dibuat untuk latihan Sustainable Biological System 🌱</footer>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
