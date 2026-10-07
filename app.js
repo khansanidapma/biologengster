@@ -1,115 +1,15 @@
-
-let currentPractice = [];
-let practiceIndex = 0;
-let practiceScore = 0;
-let practiceAnswered = false;
-let compRound = null, compQuestions = [], compIndex = 0, compScore = 0, compAnswered = false;
-
-function showPage(id){
-  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));
-  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.page===id));
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-document.querySelectorAll('.nav-btn').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
-
-function renderMaterial(){
-  const box=document.getElementById('material-list');
-  box.innerHTML=MATERIAL.sections.map(s=>`
-    <article class="material-card"><h3>${s.title}</h3><ul>${s.points.map(x=>`<li>${x}</li>`).join('')}</ul></article>
-  `).join('');
-}
-renderMaterial();
-
-document.querySelectorAll('.filter').forEach(btn=>{
-  btn.addEventListener('click',()=>{
-    document.querySelectorAll('.filter').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    let f=btn.dataset.filter;
-    let pool = [...PRELIM,...FINAL];
-    if(f==='mcq') pool=pool.filter(q=>q.type==='mcq'&&!q.hots);
-    if(f==='hots') pool=pool.filter(q=>q.hots);
-    if(f==='short') pool=pool.filter(q=>q.type==='short');
-    currentPractice=pool.sort(()=>Math.random()-.5);
-    practiceIndex=0; practiceScore=0; practiceAnswered=false;
-    renderPractice();
-  });
-});
-currentPractice=[...PRELIM,...FINAL].sort(()=>Math.random()-.5);
-renderPractice();
-
-function renderPractice(){
-  const box=document.getElementById('practice-box');
-  if(practiceIndex>=currentPractice.length){
-    box.innerHTML=`<div class="result"><div class="result-score">${practiceScore}/${currentPractice.length}</div><h3>Latihan selesai 🎉</h3><button class="primary" onclick="currentPractice.sort(()=>Math.random()-.5);practiceIndex=0;practiceScore=0;renderPractice()">Ulangi</button></div>`;
-    return;
-  }
-  const q=currentPractice[practiceIndex];
-  box.innerHTML=quizMarkup(q,practiceIndex+1,currentPractice.length,'practice');
-}
-
-function quizMarkup(q,num,total,mode){
-  let body='';
-  if(q.type==='mcq'){
-    body=`<div class="options">${q.options.map((o,i)=>`<button class="option" onclick="answerMCQ(${i},'${mode}')"><b>${String.fromCharCode(65+i)}.</b> ${o}</button>`).join('')}</div>`;
-  }else{
-    body=`<input id="${mode}-answer" class="input-answer" placeholder="Ketik jawaban singkat...">
-      <div style="margin-top:10px"><button class="primary" onclick="answerShort('${mode}')">Cek jawaban</button></div>`;
-  }
-  return `<div class="quiz-meta"><span>Soal ${num} / ${total}</span><span>${q.hots?'🔥 HOTS':'📘 Dasar'} • ${q.type==='short'?'Isian':'Pilihan Ganda'}</span></div>
-  <div class="question">${q.question}</div>${body}<div id="${mode}-feedback"></div>
-  <div class="quiz-footer"><span id="${mode}-score">${mode==='practice'?'Skor: '+practiceScore:''}</span><button id="${mode}-next" class="secondary hidden" onclick="nextQuestion('${mode}')">Soal berikutnya →</button></div>`;
-}
-
-function answerMCQ(i,mode){
-  let q=mode==='practice'?currentPractice[practiceIndex]:compQuestions[compIndex];
-  if((mode==='practice'?practiceAnswered:compAnswered))return;
-  if(mode==='practice')practiceAnswered=true; else compAnswered=true;
-  let buttons=document.querySelectorAll('#'+(mode==='practice'?'practice-box':'competition-box')+' .option');
-  buttons.forEach((b,idx)=>{if(idx===q.answer)b.classList.add('correct');if(idx===i&&i!==q.answer)b.classList.add('wrong');b.disabled=true});
-  let ok=i===q.answer;
-  if(ok){if(mode==='practice')practiceScore++;else compScore++;}
-  document.getElementById(mode+'-feedback').innerHTML=`<div class="explanation"><b>${ok?'Benar!':'Belum tepat.'}</b> ${q.explanation}</div>`;
-  document.getElementById(mode+'-next').classList.remove('hidden');
-  if(mode==='practice')document.getElementById('practice-score').textContent='Skor: '+practiceScore;
-}
-function normalize(s){return s.toLowerCase().trim().replace(/[.,!?]/g,'')}
-function answerShort(mode){
-  let q=mode==='practice'?currentPractice[practiceIndex]:compQuestions[compIndex];
-  if((mode==='practice'?practiceAnswered:compAnswered))return;
-  let val=normalize(document.getElementById(mode+'-answer').value);
-  if(!val)return;
-  let ok=q.accepted.some(a=>val.includes(normalize(a)));
-  if(mode==='practice')practiceAnswered=true; else compAnswered=true;
-  if(ok){if(mode==='practice')practiceScore++;else compScore++;}
-  document.getElementById(mode+'-answer').disabled=true;
-  document.getElementById(mode+'-feedback').innerHTML=`<div class="explanation"><b>${ok?'Benar!':'Jawaban perlu diperbaiki.'}</b> ${q.explanation}<br><small>Kata kunci: ${q.accepted.join(', ')}</small></div>`;
-  document.getElementById(mode+'-next').classList.remove('hidden');
-  if(mode==='practice')document.getElementById('practice-score').textContent='Skor: '+practiceScore;
-}
-function nextQuestion(mode){
-  if(mode==='practice'){practiceIndex++;practiceAnswered=false;renderPractice();}
-  else{compIndex++;compAnswered=false;renderCompetition();}
-}
-
-function startCompetition(round){
-  compRound=round;
-  compQuestions=round==='prelim'?[...PRELIM]:[...FINAL];
-  compIndex=0;compScore=0;compAnswered=false;
-  document.getElementById('competition-menu').classList.add('hidden');
-  document.getElementById('competition-box').classList.remove('hidden');
-  renderCompetition();
-}
-function renderCompetition(){
-  const box=document.getElementById('competition-box');
-  if(compIndex>=compQuestions.length){
-    const pct=Math.round(compScore/compQuestions.length*100);
-    box.innerHTML=`<div class="result"><div class="eyebrow">${compRound==='prelim'?'PENYISIHAN':'FINAL'} SELESAI</div><div class="result-score">${compScore}/${compQuestions.length}</div><h3>${pct}% benar</h3><p>${pct>=80?'🔥 Mantap! Kamu sudah punya modal kuat.':'🌱 Jangan berhenti—review materi dan coba lagi.'}</p><button class="primary" onclick="resetCompetition()">Kembali ke pilihan babak</button></div>`;
-    return;
-  }
-  const q=compQuestions[compIndex];
-  box.innerHTML=quizMarkup(q,compIndex+1,compQuestions.length,'competition');
-}
-function resetCompetition(){
-  document.getElementById('competition-menu').classList.remove('hidden');
-  document.getElementById('competition-box').classList.add('hidden');
-}
+let chosen=new Set(),pool=[],i=0,ans=[],lastChosen=[];
+const N=Object.keys(SUBJECTS);
+function show(x){document.querySelectorAll(".page").forEach(s=>s.classList.remove("active"));document.getElementById(x).classList.add("active");scrollTo({top:0,behavior:"smooth"})}
+function home(){show("home")}
+function subjectsPage(){render();show("subjects")}
+function render(){grid.innerHTML=N.map(n=>{let s=SUBJECTS[n];return `<article class="subject ${chosen.has(n)?"selected":""}" onclick="toggle('${n}')"><div class="check">✓</div><div class="ico">${s.icon}</div><h3>${n}</h3><p>${s.desc}</p></article>`}).join("");sel.textContent=chosen.size?`${chosen.size} pelajaran dipilih.`:"Belum ada pilihan."}
+function toggle(n){chosen.has(n)?chosen.delete(n):chosen.add(n);render()}
+function startAll(){chosen=new Set(N);startSelected()}
+function startSelected(){if(!chosen.size){alert("Pilih minimal satu pelajaran dulu ya 🌱");return}lastChosen=[...chosen];pool=[];chosen.forEach(n=>SUBJECTS[n].questions.forEach(q=>pool.push({...q,sub:n})));pool.sort(()=>Math.random()-.5);i=0;ans=[];show("quiz");draw()}
+function draw(){let q=pool[i];meta.textContent=`Soal ${i+1}/${pool.length} • ${q.sub}`;bar.style.width=(i/pool.length*100)+"%";card.innerHTML=`<div class="qmeta"><span>${SUBJECTS[q.sub].icon} ${q.sub}</span><span>🔒 Kunci disembunyikan</span></div><div class="question">${q.q}</div><div class="options">${q.o.map((x,j)=>`<button class="option" onclick="pick(${j})"><b>${String.fromCharCode(65+j)}.</b> ${x}</button>`).join("")}</div><div class="next"><button id="next" class="primary hidden" onclick="next()">Lanjut →</button></div>`}
+function pick(j){document.querySelectorAll(".option").forEach(x=>x.disabled=true);document.querySelectorAll(".option")[j].classList.add("pick");ans[i]=j;next.classList.remove("hidden")}
+function next(){i++;i>=pool.length?finish():draw()}
+function finish(){let score=pool.reduce((s,q,k)=>s+(ans[k]===q.a?1:0),0),pct=Math.round(score/pool.length*100);sc.textContent=score;tot.textContent="/"+pool.length;msg.textContent=pct>=90?"🔥 GILA BAGUS! Bismillah juara UISO!":pct>=75?"🌿 Mantap! Tinggal review yang salah.":pct>=60?"🧪 Lumayan! Gas latihan lagi.":"🌱 Jangan menyerah, belajar lagi dan coba ulang!";review.innerHTML=pool.map((q,k)=>{let ok=ans[k]===q.a;return `<div class="rev ${ok?"ok":"no"}"><b>${k+1}. ${ok?"✓ Benar":"✕ Belum tepat"} • ${q.sub}</b><div>${q.q}</div><small><b>Jawaban:</b> ${q.o[q.a]}<br><b>Pembahasan:</b> ${q.e}</small></div>`}).join("");show("result")}
+function again(){chosen=new Set(lastChosen);startSelected()}
+render();
